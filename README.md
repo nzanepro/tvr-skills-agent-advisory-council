@@ -95,6 +95,8 @@ A complete session on a fictional product is in
 /plugin install council@tvr-skills-agent-advisory-council
 ```
 
+Free and MIT-licensed. If it saves you time, you can [buy me a coffee](https://buymeacoffee.com/trespassvr).
+
 Plugin skills are namespaced, so the skill is `/council:advisory-council`.
 
 **Personal skill** (every project), from a clone:
