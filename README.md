@@ -83,7 +83,7 @@ A complete session on a fictional product is in
 | Need | Check |
 |---|---|
 | An Agent Skills client; Claude Code for parallel member subagents | `claude --version` |
-| Python 3.10 or later for the helper script (standard library only; optional) | `python --version` |
+| Python 3.9 or later for the helper script (standard library only; optional) | `python --version` |
 | Web access for the verifier (optional; without it, claims are marked UNVERIFIED) | |
 
 ## Install the Claude Code plugin
