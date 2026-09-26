@@ -251,6 +251,13 @@ What this skill adds is the shared dossier, the persona-free verification with c
 addenda between the rounds, and a recommendation that carries the dissent and the tests that
 would change it.
 
+## Support
+
+These skills are free and MIT-licensed. If they save you time, you can support the work at
+[buymeacoffee.com/trespassvr](https://buymeacoffee.com/trespassvr).
+
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/trespassvr)
+
 ## License
 
 MIT; see [LICENSE](LICENSE). The skill folder carries a copy as `LICENSE.txt`.
