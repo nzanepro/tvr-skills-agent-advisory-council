@@ -97,6 +97,8 @@ A complete session on a fictional product is in
 
 Free and MIT-licensed. If it saves you time, you can [buy me a coffee](https://buymeacoffee.com/trespassvr).
 
+**Install before you start a session.** Claude Code loads skills and plugins when a session starts, so they work best when installed first. If you install one during a session, start a new session before asking for it.
+
 Plugin skills are namespaced, so the skill is `/council:advisory-council`.
 
 **Personal skill** (every project), from a clone:
