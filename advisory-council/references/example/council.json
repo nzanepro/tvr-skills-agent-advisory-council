@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "title": "Subscription for remote alerts",
+  "slug": "alert-subscription",
+  "dossier": 1,
+  "date": "2026-03-02",
+  "mode": "parallel",
+  "seats": [
+    {
+      "id": "cfo",
+      "title": "Chief Financial Officer",
+      "group": "C-suite",
+      "weight": 1.0
+    },
+    {
+      "id": "homeowner",
+      "title": "Mainstream buyer, home owner",
+      "group": "Customers",
+      "weight": 2.0
+    },
+    {
+      "id": "landlord",
+      "title": "Small landlord with 5-20 units",
+      "group": "Customers",
+      "weight": 1.0
+    },
+    {
+      "id": "insurer",
+      "title": "Home-insurance partner",
+      "group": "Partners",
+      "weight": 1.0
+    },
+    {
+      "id": "platform",
+      "title": "Competitor perspective, large smart-home platform archetype",
+      "group": "Competitors",
+      "weight": 1.0
+    },
+    {
+      "id": "advocate",
+      "title": "Consumer advocate (argues against the change)",
+      "group": "Critics",
+      "weight": 1.0
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "name": "tvr-skills-agent-advisory-council",
+  "owner": {
+    "name": "nzanepro",
+    "url": "https://github.com/nzanepro"
+  },
+  "description": "An Agent Skill that runs a simulated advisory council (board, C-suite, customers, competitors, critics, regulators) on a decision, with fact-checked rounds and a recommendation that keeps the dissent",
+  "version": "0.1.0",
+  "plugins": [
+    {
+      "name": "council",
+      "description": "Convene an advisory board of stakeholder personas on a product, business, technical, policy or research decision: dossier, independent Round 1, fact-check addenda, tally, Round 2 vote, recommendation with dissent, risks and next steps",
+      "version": "0.1.0",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": [
+        "advisory-council",
+        "advisory-board",
+        "board-of-advisors",
+        "board-of-directors",
+        "stakeholder-analysis",
+        "persona-panel",
+        "synthetic-personas",
+        "decision-making",
+        "product-strategy",
+        "product-management",
+        "business-strategy",
+        "red-team",
+        "devils-advocate",
+        "fact-checking",
+        "deliberation",
+        "multi-agent",
+        "subagents",
+        "agent-skills",
+        "claude-skills",
+        "claude-code"
+      ],
+      "tags": [
+        "advisory-council",
+        "advisory-board",
+        "board-of-advisors",
+        "board-of-directors",
+        "stakeholder-analysis",
+        "persona-panel",
+        "synthetic-personas",
+        "decision-making",
+        "product-strategy",
+        "product-management",
+        "business-strategy",
+        "red-team",
+        "devils-advocate",
+        "fact-checking",
+        "deliberation",
+        "multi-agent",
+        "subagents",
+        "agent-skills",
+        "claude-skills",
+        "claude-code"
+      ],
+      "homepage": "https://github.com/nzanepro/tvr-skills-agent-advisory-council",
+      "repository": "https://github.com/nzanepro/tvr-skills-agent-advisory-council",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./advisory-council"
+      ]
+    }
+  ]
+}

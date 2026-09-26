@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
+# pytest
+.pytest_cache/
+
+# council sessions run from a clone (keep the worked example under advisory-council/references/example/)
+/council/
+
+# packaged skills
+*.skill
+
+# local list of private words for the hygiene test (never commit)
+.private-words

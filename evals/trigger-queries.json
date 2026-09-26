@@ -1,0 +1,122 @@
+[
+  {
+    "query": "set up an advisory board to review whether we should add a paid tier to our scheduling app",
+    "should_trigger": true
+  },
+  {
+    "query": "I want a board-of-directors style review of our plan to expand into Germany: CFO, a sceptical investor, a couple of customer types, the works",
+    "should_trigger": true
+  },
+  {
+    "query": "simulate how our target customers, a big competitor and the regulator would each react to us dropping the free plan, then tell me what to do",
+    "should_trigger": true
+  },
+  {
+    "query": "can you convene a council of personas to stress test this product launch decision before friday",
+    "should_trigger": true
+  },
+  {
+    "query": "red team our pricing change from every stakeholder's point of view and give me a recommendation that keeps the dissent",
+    "should_trigger": true
+  },
+  {
+    "query": "get me several independent perspectives on whether to open-source our SDK - maintainers, enterprise customers, legal, finance",
+    "should_trigger": true
+  },
+  {
+    "query": "run a persona panel on the rebrand before we commit to it",
+    "should_trigger": true
+  },
+  {
+    "query": "we're deciding between building our own payments stack or using a provider. spin up an advisory council with the cto, cfo, security and a couple of customer segments",
+    "should_trigger": true
+  },
+  {
+    "query": "act as my board plus an activist investor and argue out whether we should sell the hardware division",
+    "should_trigger": true
+  },
+  {
+    "query": "I need a stakeholder review of the proposed parking levy: residents, small shops, the budget office and the critics, with a vote at the end",
+    "should_trigger": true
+  },
+  {
+    "query": "have a panel of methodologists, a sceptical reviewer, the funder and the ethics board debate our study design and vote on whether to preregister",
+    "should_trigger": true
+  },
+  {
+    "query": "put together a mock advisory board of c-suite roles and target market segments for my meal-kit startup and have them weigh in on going direct-to-consumer",
+    "should_trigger": true
+  },
+  {
+    "query": "get the council back together on the follow-up question about pricing tiers, same seats as last time",
+    "should_trigger": true
+  },
+  {
+    "query": "before I decide on the database migration I want a devil's advocate, the ops team, the maintainers and a customer to argue it out over two rounds",
+    "should_trigger": true
+  },
+  {
+    "query": "what would our customers, our competitors and the board each say about raising prices 20%? write it up properly with a fact check and a vote",
+    "should_trigger": true
+  },
+  {
+    "query": "quick gut check, is 29 dollars a month too much for this app? one line answer is fine",
+    "should_trigger": false
+  },
+  {
+    "query": "summarise these 12 customer interview transcripts into themes and quotes",
+    "should_trigger": false
+  },
+  {
+    "query": "write up the minutes for yesterday's board meeting from my notes",
+    "should_trigger": false
+  },
+  {
+    "query": "roleplay as that famous iPhone founder, in his voice, and tear apart my pitch deck",
+    "should_trigger": false
+  },
+  {
+    "query": "create three user personas for our design system documentation",
+    "should_trigger": false
+  },
+  {
+    "query": "draft an agenda and calendar invite for our quarterly advisory board meeting",
+    "should_trigger": false
+  },
+  {
+    "query": "review this pull request before I merge it",
+    "should_trigger": false
+  },
+  {
+    "query": "do a quick SWOT analysis of our company from this one-pager",
+    "should_trigger": false
+  },
+  {
+    "query": "help me find and recruit real people for an advisory board for my startup",
+    "should_trigger": false
+  },
+  {
+    "query": "send the same question to gpt, gemini and claude and have them rank each other's answers",
+    "should_trigger": false
+  },
+  {
+    "query": "fact-check this blog post about our industry and list anything that's wrong",
+    "should_trigger": false
+  },
+  {
+    "query": "make a comparison table of the top five CRM tools by price and features",
+    "should_trigger": false
+  },
+  {
+    "query": "build a survey to ask our customers how they feel about the price change",
+    "should_trigger": false
+  },
+  {
+    "query": "explain what an advisory board does and how a nonprofit should set one up",
+    "should_trigger": false
+  },
+  {
+    "query": "brainstorm 20 names for the new product line",
+    "should_trigger": false
+  }
+]
