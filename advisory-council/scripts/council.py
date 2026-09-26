@@ -71,6 +71,12 @@ class CouncilError(Exception):
 
 # ----------------------------------------------------------------------------- helpers
 
+def write_lf(path: Path, text: str) -> None:
+    """Write UTF-8 text with LF line endings (Path.write_text has no newline= before 3.10)."""
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+
+
 def slugify(text: str, limit: int = 40) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     slug = slug[:limit].rstrip("-")
@@ -286,7 +292,7 @@ def cmd_init(args) -> dict:
         if path.exists():
             kept.append(name)
             continue
-        path.write_text(fill(load_template(template), values), encoding="utf-8", newline="\n")
+        write_lf(path, fill(load_template(template), values))
         created.append(name)
 
     return {"ok": True, "folder": str(folder.resolve()), "created": created, "kept": kept,
@@ -382,7 +388,7 @@ def cmd_addendum(args) -> dict:
                 {"addendum_id": addendum_id, "nn": two_digit(roster["dossier"]),
                  "slug": roster["slug"], "title": roster["title"]})
     text = text.replace("## 1. <short title>", f"## {last_item + 1}. <short title>")
-    path.write_text(text, encoding="utf-8", newline="\n")
+    write_lf(path, text)
     return {"ok": True, "created": path.name, "next_item": last_item + 1}
 
 

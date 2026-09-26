@@ -230,3 +230,19 @@ def test_trigger_queries_have_at_least_eight_of_each():
     should_not = sum(1 for item in data if item["should_trigger"] is False)
     assert should >= 8, f"only {should} should_trigger=true queries"
     assert should_not >= 8, f"only {should_not} should_trigger=false queries"
+
+
+# --------------------------------------------------------------------------- python 3.9
+
+def test_no_python_310_only_calls():
+    # CI covers 3.9; these calls exist only from 3.10, and 3.9 has no syntax error for them.
+    import re
+    pattern = re.compile(r"(write_text|read_text)\([^)]*newline=|zip\([^)]*strict=|itertools\.pairwise|\.bit_count\(|kw_only=|slots=True")
+    offenders = []
+    for path in list(SKILL_DIR.rglob("*.py")) + list(REPO_ROOT.joinpath("tests").glob("*.py")):
+        if path.name == "test_skill_hygiene.py":
+            continue
+        for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if pattern.search(line):
+                offenders.append(f"{path.name}:{n}")
+    assert not offenders, offenders
