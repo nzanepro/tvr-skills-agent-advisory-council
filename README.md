@@ -101,6 +101,25 @@ Free and MIT-licensed. If it saves you time, you can [buy me a coffee](https://b
 
 Plugin skills are namespaced, so the skill is `/council:advisory-council`.
 
+From your shell instead of a session:
+
+```bash
+claude plugin marketplace add nzanepro/tvr-skills-agent-advisory-council
+claude plugin install council@tvr-skills-agent-advisory-council
+```
+
+**Update the plugin.** Auto-update is off by default for this marketplace. To get a new
+version, run `/plugin`, open the **Installed** tab, select `council` and choose **Update now**,
+or from your shell run:
+
+```bash
+claude plugin update council@tvr-skills-agent-advisory-council
+```
+
+The new version loads in your next session, or after `/reload-plugins`. To have Claude Code
+update it for you, open the **Marketplaces** tab in `/plugin`, select
+`tvr-skills-agent-advisory-council` and choose **Enable auto-update**.
+
 **Personal skill** (every project), from a clone:
 
 ```bash
@@ -124,7 +143,9 @@ commit it, so everyone on the project gets the same council process.
 **Other Agent Skills clients**: copy `advisory-council/` into that client's skills folder (see
 [agentskills.io](https://agentskills.io)). The folder is self-contained.
 
-**claude.ai**: zip the `advisory-council/` folder and upload it as a custom skill. There it runs
+**claude.ai**: download `advisory-council-<version>.zip` from the
+[latest release](https://github.com/nzanepro/tvr-skills-agent-advisory-council/releases/latest)
+(or zip the `advisory-council/` folder yourself) and upload it as a custom skill. There it runs
 in single-agent mode, since members cannot be separate subagents.
 
 ## Usage: convene an advisory council
@@ -198,6 +219,20 @@ Round 1 report, a changed vote with no named reason, a recommendation missing it
 - **Cost.** A six-seat council is about fourteen member runs. For small decisions the skill
   offers a light version (fewer seats, one round), and says what it skipped.
 
+## What it runs and what it sends
+
+- **Files.** The skill writes the council's Markdown files into one folder in your project
+  (`council/` unless you choose another) and changes nothing else.
+- **Script.** `council.py` runs locally with the Python standard library. It reads its own
+  templates and any roster file you name, writes only inside the council folder, and makes no
+  network calls.
+- **Network.** The plugin has no hooks, MCP servers or background processes and sends nothing
+  anywhere itself. The verifier may use your Claude client's own web search or fetch tools, when
+  you have them and allow them, to check claims in the dossier. Your decision and dossier go to
+  the model like any other prompt.
+
+See [SECURITY.md](SECURITY.md) to report a problem.
+
 ## Troubleshooting
 
 - **Members agree on everything**: check that the contrarian seat argued its case and that the
@@ -210,6 +245,8 @@ Round 1 report, a changed vote with no named reason, a recommendation missing it
 - **You asked for a named person**: the skill seats the archetype instead and says why.
 - **The skill does not trigger**: ask for the advisory-council skill by name, or use the slash
   command.
+- **An update did not take effect**: the running session keeps the version it loaded. Start a new
+  session or run `/reload-plugins`; `claude plugin list` shows the installed version.
 
 ## Development
 
@@ -222,16 +259,27 @@ CI runs the tests on Windows, macOS and Linux. PyYAML is optional locally: with 
 also parse the `SKILL.md` frontmatter as YAML. Trigger evals (prompts that should and should not
 load the skill, focused on near misses such as a single quick opinion, summarising real
 interviews or role-playing a named person) are in
-[`evals/trigger-queries.json`](evals/trigger-queries.json) in the skill-creator format. Check the
-marketplace file with `claude plugin validate .` before a release.
+[`evals/trigger-queries.json`](evals/trigger-queries.json) in the skill-creator format.
 
-Images: [`docs/images/council-flow.png`](docs/images/council-flow.png) is the README diagram and
-[`docs/images/social-preview.png`](docs/images/social-preview.png) (1280 x 640) is the GitHub
-social preview image. Both are synthetic.
+The plugin manifest is [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json);
+[`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json) lists it. CI also runs
+`claude plugin validate . --strict`; run it yourself before a release. Pushing a `vX.Y.Z` tag
+builds `advisory-council-X.Y.Z.zip` and the GitHub Release from the matching
+[CHANGELOG.md](CHANGELOG.md) section. See [CONTRIBUTING.md](CONTRIBUTING.md) for the version
+fields to bump together.
+
+The [README diagram](docs/images/council-flow.png) and the
+[GitHub social preview image](docs/images/social-preview.png) (1280 x 640) are synthetic.
 
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).
+
+## Contributing
+
+Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md) and the
+[code of conduct](CODE_OF_CONDUCT.md). Report security problems privately as described in
+[SECURITY.md](SECURITY.md).
 
 ## See also
 
