@@ -1,0 +1,79 @@
+name: release
+
+# Pushing a tag such as v0.2.0 builds advisory-council-0.2.0.zip from the
+# advisory-council/ folder and publishes a GitHub Release with that zip and the
+# matching CHANGELOG.md section as its notes. The tag must match the version in
+# .claude-plugin/plugin.json, marketplace.json and SKILL.md.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Check versions and extract release notes
+        id: meta
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, re, sys
+
+          tag = os.environ["TAG"]
+          version = tag[1:]
+          if not re.fullmatch(r"\d+\.\d+\.\d+", version):
+              sys.exit(f"tag {tag!r} is not v<major>.<minor>.<patch>")
+
+          found = {
+              "plugin.json": json.load(open(".claude-plugin/plugin.json"))["version"],
+              "marketplace.json": json.load(open(".claude-plugin/marketplace.json"))["version"],
+          }
+          skill = open("advisory-council/SKILL.md", encoding="utf-8").read()
+          match = re.search(r"^  version: (\S+)$", skill.split("\n---", 1)[0], re.MULTILINE)
+          found["SKILL.md metadata.version"] = match.group(1) if match else None
+          wrong = {name: value for name, value in found.items() if value != version}
+          if wrong:
+              sys.exit(f"tag {tag} does not match: {wrong}")
+
+          changelog = open("CHANGELOG.md", encoding="utf-8").read()
+          section = re.search(
+              rf"^## \[{re.escape(version)}\][^\n]*\n(.*?)(?=^## \[|^\[[^\]]+\]: |\Z)",
+              changelog, re.MULTILINE | re.DOTALL)
+          if not section or not section.group(1).strip():
+              sys.exit(f"CHANGELOG.md has no '## [{version}]' section")
+          os.makedirs("dist", exist_ok=True)
+          with open("dist/notes.md", "w", encoding="utf-8") as fh:
+              fh.write(section.group(1).strip() + "\n")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"version={version}\n")
+          EOF
+
+      - name: Build the skill zip
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          git archive --format=zip --prefix=advisory-council/ \
+            -o "dist/advisory-council-${VERSION}.zip" "HEAD:advisory-council"
+          unzip -l "dist/advisory-council-${VERSION}.zip"
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          gh release create "$TAG" "dist/advisory-council-${VERSION}.zip" \
+            --verify-tag --title "${TAG}: advisory-council" --notes-file dist/notes.md
