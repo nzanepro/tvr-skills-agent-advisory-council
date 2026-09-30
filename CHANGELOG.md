@@ -5,6 +5,24 @@ All notable changes to this project are listed here. The format follows
 [Semantic Versioning](https://semver.org/). The version matches `metadata.version` in
 `advisory-council/SKILL.md`, `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`.
 
+## [0.2.1] - 2026-09-29
+
+### Added
+
+- A plugin icon for the Claude plugin directory listing: a council of seats around a table
+  with the shared dossier, in the colours of the README diagram. It is a square SVG in
+  .claude-plugin/, and `icon` in `plugin.json` points to it. A test checks that it is
+  well-formed, square and self-contained (no script, links or embedded images).
+
+### Fixed
+
+- README: the manual install commands for a linked copy used shell variables (the current
+  folder and, in PowerShell, the user profile folder). The plugin directory's scan reads a
+  variable beside the `git clone` URL as a credential from the installer's machine and held the
+  plugin for review. The personal and linked copies now clone into your home folder and use
+  literal paths, and create `~/.claude/skills` if it is missing. A test keeps shell variables
+  and command substitution out of the shipped docs.
+
 ## [0.2.0] - 2026-09-29
 
 ### Added
@@ -58,5 +76,6 @@ All notable changes to this project are listed here. The format follows
 - Claude Code plugin marketplace (`.claude-plugin/marketplace.json`), trigger evals, tests and
   CI on Windows, macOS and Linux.
 
+[0.2.1]: https://github.com/nzanepro/tvr-skills-agent-advisory-council/releases/tag/v0.2.1
 [0.2.0]: https://github.com/nzanepro/tvr-skills-agent-advisory-council/releases/tag/v0.2.0
 [0.1.0]: https://github.com/nzanepro/tvr-skills-agent-advisory-council/releases/tag/v0.1.0

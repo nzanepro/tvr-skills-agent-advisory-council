@@ -5,7 +5,7 @@
     "url": "https://github.com/nzanepro"
   },
   "description": "An Agent Skill that runs a simulated advisory council (board, C-suite, customers, competitors, critics, regulators) on a decision, with fact-checked rounds and a recommendation that keeps the dissent",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "plugins": [
     {
       "name": "council",
