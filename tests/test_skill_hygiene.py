@@ -12,6 +12,7 @@ import json
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -449,28 +450,60 @@ def test_no_personal_or_absolute_paths_in_shipped_content():
 
 # --------------------------------------------------------------------------- no shell variables
 
-# $NAME, ${...}, $(...), PowerShell $env:NAME and cmd %NAME%.
-_SHELL_VARIABLE = re.compile(r"\$(?:[A-Za-z_{(]|env:)|%[A-Za-z_][A-Za-z0-9_]*%")
+# A dollar sign before a name, an opening brace or an opening parenthesis (a variable
+# or command substitution), PowerShell's env: drive after a dollar sign, and a cmd
+# name between percent signs. The dollar sign is written as the class [$] so this
+# line does not itself match.
+_SHELL_VARIABLE = re.compile(r"[$](?:[A-Za-z_{(]|env:)|%[A-Za-z_][A-Za-z0-9_]*%")
 
 
-def test_no_shell_variables_or_command_substitution_in_shipped_docs():
-    # The plugin directory's scanner reads a variable such as $PWD in a README command,
-    # next to a remote URL, as a credential from the installer's machine that the
-    # command could send off it ("Uses a credential from the user's machine"), and
-    # holds the plugin for review. Install commands use literal paths instead. The
-    # workflows under .github/workflows are CI, not docs, and legitimately use ${{ }}.
-    roots = (SKILL_DIR, REPO_ROOT / "evals", REPO_ROOT / ".claude-plugin",
-             REPO_ROOT / ".github" / "ISSUE_TEMPLATE",
-             REPO_ROOT / ".github" / "pull_request_template.md") + tuple(
-                 sorted(REPO_ROOT.glob("*.md")))
+def _iter_repo_text_files():
+    # Every text file in the repo, this one included, except the CI workflows and what
+    # .gitignore keeps out (dot directories other than .claude-plugin and .github, such
+    # as .git, .venv and local worktrees; caches; council sessions; .private-words).
+    import os
+    skipped_dirs = {"__pycache__", ".pytest_cache", "council"}
+    for directory, dirnames, filenames in os.walk(REPO_ROOT):
+        here = Path(directory)
+        dirnames[:] = sorted(
+            name for name in dirnames
+            if name not in skipped_dirs and not name.endswith(".egg-info")
+            and (not name.startswith(".") or name in (".claude-plugin", ".github"))
+            and here / name != REPO_ROOT / ".github" / "workflows")
+        for name in sorted(filenames):
+            if name == ".private-words" or name.endswith((".pyc", ".pyo", ".skill")):
+                continue
+            path = here / name
+            try:
+                yield path, path.read_text(encoding="utf-8")
+            except (UnicodeDecodeError, OSError):
+                continue
+
+
+def test_no_shell_variables_or_command_substitution_in_any_repo_file():
+    # The plugin directory's scanner treats every file in the repo, tests included, as
+    # plugin surface. It reads a variable such as the shell's current-directory
+    # variable in a file that also spells a remote URL host as a credential from the
+    # installer's machine that could be sent off it ("Uses a credential from the
+    # user's machine"), and holds the plugin for review. Install commands use literal
+    # paths instead, and comments describe such variables in words. The workflows
+    # under .github/workflows are CI, not plugin content, and legitimately use them.
     offenders = []
-    for path, text in _iter_text_files(*roots):
-        if path.suffix not in (".md", ".json", ".yml", ".yaml", ".txt"):
-            continue
+    for path, text in _iter_repo_text_files():
         for number, line in enumerate(text.splitlines(), 1):
             if _SHELL_VARIABLE.search(line):
                 offenders.append(f"{path.relative_to(REPO_ROOT)}:{number}: {line.strip()}")
     assert not offenders, offenders
+
+
+def test_shell_variable_pattern_catches_each_form():
+    # Fixtures are built by concatenation so this file never spells one itself.
+    dollar, percent = "$", "%"
+    for sample in (dollar + "NAME", dollar + "{NAME}", dollar + "(date)",
+                   dollar + "env:NAME", percent + "NAME" + percent):
+        assert _SHELL_VARIABLE.search("cd " + sample + "/x"), sample
+    for sample in ("costs " + dollar + "5M", "50" + percent + " of seats", "a " + dollar + " b"):
+        assert not _SHELL_VARIABLE.search(sample), sample
 
 
 # --------------------------------------------------------------------------- license / evals
