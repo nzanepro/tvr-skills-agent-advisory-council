@@ -214,11 +214,12 @@ Round 1 report, a changed vote with no named reason, a recommendation missing it
 ## Development
 
 ```bash
-python -m pip install pytest
+python -m pip install pytest pyyaml
 python -m pytest tests -q
 ```
 
-CI runs the tests on Windows, macOS and Linux. Trigger evals (prompts that should and should not
+CI runs the tests on Windows, macOS and Linux. PyYAML is optional locally: with it, the tests
+also parse the `SKILL.md` frontmatter as YAML. Trigger evals (prompts that should and should not
 load the skill, focused on near misses such as a single quick opinion, summarising real
 interviews or role-playing a named person) are in
 [`evals/trigger-queries.json`](evals/trigger-queries.json) in the skill-creator format. Check the

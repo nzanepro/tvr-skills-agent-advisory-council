@@ -1,8 +1,10 @@
 """Packaging hygiene checks: --help output, SKILL.md frontmatter, and repo cleanliness.
 
 Only sys.executable is ever launched (subprocess for --help). SKILL.md's YAML
-frontmatter is parsed by hand (simple line parsing), since PyYAML is not a
-dependency of this project.
+frontmatter is read by a small strict parser in this file, which needs no extra
+package and rejects anything a real YAML parser might read differently (such as
+an unquoted value containing ": "). When PyYAML is installed (CI installs it),
+the frontmatter is also parsed with yaml.safe_load and both results must agree.
 """
 from __future__ import annotations
 
@@ -49,44 +51,168 @@ class TestHelp:
 
 # --------------------------------------------------------------------------- frontmatter
 
-def parse_frontmatter(text: str) -> dict:
-    """A small hand-rolled parser for this project's flat SKILL.md frontmatter.
+class FrontmatterError(ValueError):
+    """The frontmatter is not in the strict subset of YAML this project uses."""
 
-    Handles simple `key: value` lines and one level of nesting (`metadata:` with
-    indented `version: ...` under it). Good enough for this file; not a general
-    YAML parser.
+
+_KEY_LINE = re.compile(r"^(?P<indent> *)(?P<key>[A-Za-z_][A-Za-z0-9_-]*):(?: (?P<value>.*))?$")
+# A plain (unquoted) YAML scalar may not start with one of these indicators.
+_PLAIN_START_FORBIDDEN = tuple("[]{}#&*!|>'\"%@`,") + ("- ", "? ", ": ")
+# Plain scalars YAML would read as something other than a string.
+_NON_STRING_PLAIN = re.compile(
+    r"^(?:~|null|Null|NULL|true|True|TRUE|false|False|FALSE|yes|Yes|YES|no|No|NO|on|On|ON|off|Off|OFF"
+    r"|[-+]?(?:\d[\d_]*)(?:\.\d*)?(?:[eE][-+]?\d+)?|[-+]?\.(?:inf|Inf|INF)|\.(?:nan|NaN|NAN))$"
+)
+
+
+def _parse_scalar(value: str, where: str) -> str:
+    """Parse one single-line scalar strictly and return its string value.
+
+    Accepts a double-quoted string (read with JSON rules, which match YAML's for
+    the escapes allowed here), a single-quoted string, or a plain scalar that
+    YAML would read as exactly the same text. Rejects everything else, notably
+    an unquoted value containing ": " or " #", which YAML parsers reject or
+    truncate while a naive split on the first colon would accept.
+    """
+    if value.startswith('"'):
+        if len(value) < 2 or not value.endswith('"'):
+            raise FrontmatterError(f"{where}: unterminated double-quoted string")
+        try:
+            parsed = json.loads(value)
+        except ValueError as exc:
+            raise FrontmatterError(f"{where}: invalid double-quoted string ({exc})") from None
+        if not isinstance(parsed, str):
+            raise FrontmatterError(f"{where}: expected a string")
+        return parsed
+    if value.startswith("'"):
+        inner = value[1:-1]
+        if len(value) < 2 or not value.endswith("'") or "'" in inner.replace("''", ""):
+            raise FrontmatterError(f"{where}: invalid single-quoted string")
+        return inner.replace("''", "'")
+    if value != value.strip():
+        raise FrontmatterError(f"{where}: trailing whitespace in a plain value")
+    if value.startswith(_PLAIN_START_FORBIDDEN) or value in ("-", "?", ":"):
+        raise FrontmatterError(
+            f"{where}: a plain value cannot start with {value[:2]!r}; quote it")
+    if ": " in value or value.endswith(":"):
+        raise FrontmatterError(
+            f"{where}: an unquoted value cannot contain ': ' (YAML reads it as a mapping); "
+            "wrap the value in double quotes")
+    if " #" in value or "\t#" in value:
+        raise FrontmatterError(
+            f"{where}: an unquoted value cannot contain ' #' (YAML starts a comment there); "
+            "wrap the value in double quotes")
+    if _NON_STRING_PLAIN.match(value):
+        raise FrontmatterError(
+            f"{where}: {value!r} is not a string in YAML; quote it")
+    return value
+
+
+def parse_frontmatter(text: str) -> dict:
+    """Parse this project's SKILL.md frontmatter with a small strict parser.
+
+    Accepts only the subset of YAML the file needs: top-level `key: value` lines
+    and blocks of two-space-indented `key: value` lines under a `key:` line, where
+    every value is a single-line string scalar (see _parse_scalar). Anything
+    outside that subset raises FrontmatterError instead of being guessed at, so a
+    value that a YAML parser would reject or read differently fails the tests.
     """
     lines = text.splitlines()
-    assert lines[0].strip() == "---", "SKILL.md must start with a '---' frontmatter fence"
-    closing = lines[1:].index("---") + 1
+    if not lines or lines[0] != "---":
+        raise FrontmatterError("SKILL.md must start with a '---' frontmatter fence")
+    try:
+        closing = lines[1:].index("---") + 1
+    except ValueError:
+        raise FrontmatterError("SKILL.md frontmatter has no closing '---' fence") from None
     body = lines[1:closing]
 
     data: dict = {}
-    current_key = None
-    for raw_line in body:
+    parent = None
+    for number, raw_line in enumerate(body, start=2):
+        where = f"frontmatter line {number}"
         if not raw_line.strip():
             continue
-        if raw_line[:1] in (" ", "\t"):
-            assert current_key is not None, f"indented line with no parent key: {raw_line!r}"
-            key, _, value = raw_line.strip().partition(":")
-            data.setdefault(current_key, {})
-            assert isinstance(data[current_key], dict), f"{current_key!r} has both a scalar and nested value"
-            data[current_key][key.strip()] = value.strip()
+        if "\t" in raw_line[: len(raw_line) - len(raw_line.lstrip())]:
+            raise FrontmatterError(f"{where}: tabs are not allowed in YAML indentation")
+        if raw_line.lstrip().startswith("#"):
+            continue
+        match = _KEY_LINE.match(raw_line)
+        if not match:
+            raise FrontmatterError(f"{where}: expected 'key: value', got {raw_line!r}")
+        indent, key, value = match.group("indent"), match.group("key"), match.group("value")
+        if indent == "":
+            if key in data:
+                raise FrontmatterError(f"{where}: duplicate key {key!r}")
+            if value is None or value == "":
+                data[key] = {}
+                parent = key
+            else:
+                data[key] = _parse_scalar(value, where)
+                parent = None
+        elif indent == "  ":
+            if parent is None:
+                raise FrontmatterError(f"{where}: indented line with no parent key")
+            if key in data[parent]:
+                raise FrontmatterError(f"{where}: duplicate key {parent}.{key}")
+            if value is None or value == "":
+                raise FrontmatterError(f"{where}: only one level of nesting is supported")
+            data[parent][key] = _parse_scalar(value, where)
         else:
-            key, sep, value = raw_line.partition(":")
-            assert sep, f"expected 'key: value', got {raw_line!r}"
-            key = key.strip()
-            value = value.strip()
-            # An empty value (e.g. "metadata:") introduces a nested block on the
-            # following indented lines, rather than a scalar.
-            data[key] = {} if value == "" else value
-            current_key = key
+            raise FrontmatterError(f"{where}: indent nested keys by exactly two spaces")
+    for key, value in data.items():
+        if value == {}:
+            raise FrontmatterError(f"{key!r} has no value and no nested keys")
     return data
 
 
 @pytest.fixture(scope="module")
 def frontmatter():
     return parse_frontmatter(SKILL_MD.read_text(encoding="utf-8"))
+
+
+class TestFrontmatterParser:
+    """The strict parser itself: it must reject what YAML parsers reject."""
+
+    def test_unquoted_colon_space_in_a_value_is_rejected(self):
+        # The 0.1.0 SKILL.md had exactly this shape and failed PyYAML.
+        text = "---\nname: x\ndescription: Runs a council on a decision: seats personas\n---\n"
+        with pytest.raises(FrontmatterError, match="': '"):
+            parse_frontmatter(text)
+
+    def test_quoted_colon_space_is_accepted(self):
+        text = '---\nname: x\ndescription: "Runs a council on a decision: seats personas"\n---\n'
+        assert parse_frontmatter(text)["description"] == "Runs a council on a decision: seats personas"
+
+    def test_single_quoted_value_unescapes_doubled_quotes(self):
+        text = "---\nname: x\ndescription: 'it''s: fine'\n---\n"
+        assert parse_frontmatter(text)["description"] == "it's: fine"
+
+    @pytest.mark.parametrize("value", [
+        "text # a comment", "[a, b]", "- item", "> folded", "*alias", "true", "1.5", "",
+        '"unterminated', "'bad ' quote'",
+    ])
+    def test_values_yaml_would_read_differently_are_rejected(self, value):
+        text = f"---\nname: x\ndescription: {value}\n---\n"
+        with pytest.raises(FrontmatterError):
+            parse_frontmatter(text)
+
+    def test_nested_block_and_semver_string(self):
+        text = "---\nname: x\nmetadata:\n  version: 1.2.3\n---\n"
+        assert parse_frontmatter(text)["metadata"] == {"version": "1.2.3"}
+
+    def test_missing_closing_fence_is_rejected(self):
+        with pytest.raises(FrontmatterError):
+            parse_frontmatter("---\nname: x\n")
+
+
+def test_frontmatter_parses_with_pyyaml_to_the_same_values(frontmatter):
+    # CI installs PyYAML so this always runs there; locally it is optional.
+    yaml = pytest.importorskip("yaml")
+    lines = SKILL_MD.read_text(encoding="utf-8").splitlines()
+    closing = lines[1:].index("---") + 1
+    loaded = yaml.safe_load("\n".join(lines[1:closing]))
+    assert isinstance(loaded, dict)
+    assert loaded == frontmatter
 
 
 class TestFrontmatter:
