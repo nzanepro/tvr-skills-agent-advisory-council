@@ -316,6 +316,65 @@ class TestPluginManifests:
                 assert entry[key] == manifest.get(key), key
 
 
+# --------------------------------------------------------------------------- plugin icon
+
+class TestPluginIcon:
+    """The directory listing shows .claude-plugin/icon.svg (square, at least 128 px).
+
+    The icon must be a plain, self-contained SVG: well-formed XML, a square viewBox,
+    and nothing that runs or loads (no script, event handlers, external links,
+    embedded images or foreign objects).
+    """
+
+    ICON = REPO_ROOT / ".claude-plugin" / "icon.svg"
+    SVG_NS = "{http://www.w3.org/2000/svg}"
+
+    @pytest.fixture(scope="class")
+    def text(self):
+        assert self.ICON.is_file(), "missing .claude-plugin/icon.svg"
+        return self.ICON.read_text(encoding="utf-8")
+
+    @pytest.fixture(scope="class")
+    def root(self, text):
+        # A DOCTYPE could declare entities; the icon has no need for one.
+        assert "<!DOCTYPE" not in text.upper() and "<!ENTITY" not in text.upper()
+        import xml.etree.ElementTree as ET
+        return ET.fromstring(text)
+
+    def test_icon_is_small_text(self, text):
+        assert len(text.encode("utf-8")) < 16 * 1024
+
+    def test_root_is_svg_with_a_square_viewbox_of_at_least_128(self, root):
+        assert root.tag == self.SVG_NS + "svg"
+        numbers = [float(n) for n in root.get("viewBox", "").replace(",", " ").split()]
+        assert len(numbers) == 4, root.get("viewBox")
+        width, height = numbers[2], numbers[3]
+        assert width == height >= 128
+        for attribute in ("width", "height"):
+            if root.get(attribute) is not None:
+                assert float(root.get(attribute).replace("px", "")) >= 128, attribute
+        assert root.get("width") == root.get("height")
+
+    def test_no_script_links_or_embedded_content(self, root, text):
+        forbidden_tags = {"script", "foreignObject", "image", "use", "a", "iframe", "style"}
+        for element in root.iter():
+            tag = element.tag.replace(self.SVG_NS, "")
+            assert tag not in forbidden_tags, tag
+            for name, value in element.attrib.items():
+                local = name.rsplit("}", 1)[-1]
+                assert local != "href", f"{tag} has an href"
+                assert not local.lower().startswith("on"), f"{tag} has an event handler {local}"
+                assert "url(" not in value, f"{tag} {local} refers to a url()"
+        # The SVG namespace declaration is the one URL the file may contain.
+        lowered = text.lower().replace('xmlns="http://www.w3.org/2000/svg"', "")
+        for needle in ("javascript:", "data:", "http://", "https://", "@import"):
+            assert needle not in lowered, needle
+
+    def test_plugin_json_points_at_the_icon(self):
+        manifest = json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))
+        assert manifest.get("icon") == "./.claude-plugin/icon.svg"
+
+
 # --------------------------------------------------------------------------- SKILL.md content
 
 class TestSkillContent:

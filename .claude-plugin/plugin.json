@@ -10,6 +10,7 @@
   "homepage": "https://github.com/nzanepro/tvr-skills-agent-advisory-council",
   "repository": "https://github.com/nzanepro/tvr-skills-agent-advisory-council",
   "license": "MIT",
+  "icon": "./.claude-plugin/icon.svg",
   "keywords": [
     "advisory-council",
     "advisory-board",
