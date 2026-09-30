@@ -1,0 +1,49 @@
+name: Feature request
+description: Suggest a seat menu, persona rule, process change, council.py feature or other improvement to the advisory-council skill.
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This repository is scoped to one skill: a simulated advisory council on a decision.
+        Please use a fictional example rather than a confidential decision, and keep real
+        named people out of it; the skill seats roles and organisation types only.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: What this affects
+      options:
+        - Council design and seat menus
+        - Personas
+        - Dossier, rounds or tally
+        - Verification and addenda
+        - Recommendation
+        - council.py
+        - Plugin packaging or install
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve
+      description: What are you trying to do that the skill cannot do today, or does clumsily? Which failure (groupthink, a wrong shared fact, a lost dissent) would it prevent?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: What should happen instead. A concrete prompt, seat list or command helps.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

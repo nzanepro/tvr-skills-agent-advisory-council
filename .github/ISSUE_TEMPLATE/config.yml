@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: How to use the skill
+    url: https://github.com/nzanepro/tvr-skills-agent-advisory-council#usage-convene-an-advisory-council
+    about: Install steps, example prompts, the helper script and troubleshooting are in the README.
+  - name: Report a security issue privately
+    url: https://github.com/nzanepro/tvr-skills-agent-advisory-council/security/advisories/new
+    about: Please do not open a public issue for a security concern. See SECURITY.md.

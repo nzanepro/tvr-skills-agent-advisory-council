@@ -1,0 +1,99 @@
+name: Bug report
+description: The advisory-council skill or council.py behaved incorrectly, the plugin did not install or load, or the skill did not trigger when it should have.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please use a **fictional or redacted decision** rather than
+        anything confidential, keep real named people out of it, and strip personal paths,
+        usernames or machine names from any pasted output. See
+        [CONTRIBUTING.md](https://github.com/nzanepro/tvr-skills-agent-advisory-council/blob/main/CONTRIBUTING.md#privacy-rules-for-anything-you-contribute).
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where the problem is
+      options:
+        - A council run (the rounds, verification, tally or recommendation Claude wrote)
+        - council.py (init, status, addendum, tally or check)
+        - Plugin install, update or loading in Claude Code
+        - Documentation, references or templates
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of issue
+      options:
+        - Wrong or unexpected behavior
+        - Script errored or crashed
+        - The skill did not trigger when it should have
+        - The skill triggered when it should not have
+        - A process rule was broken (for example a vote in an addendum, or a dissent dropped)
+        - Documentation is wrong or unclear
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Skill or plugin version
+      description: The plugin version shown by `/plugin` or `claude plugin list`, or `metadata.version` in `advisory-council/SKILL.md`, or a commit hash.
+      placeholder: e.g. 0.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: client
+    attributes:
+      label: Client and how the skill is installed
+      placeholder: e.g. Claude Code 2.1.x, plugin marketplace install; or claude.ai, uploaded skill zip
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and Python version
+      description: Python is only needed for council.py problems.
+      placeholder: e.g. Windows 11, Python 3.12; macOS 15, Python 3.9
+
+  - type: textarea
+    id: prompt
+    attributes:
+      label: Exact prompt used
+      description: For council runs and trigger problems. Paste the prompt as typed, with anything confidential replaced.
+      render: text
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Command run
+      description: For council.py problems, the exact command line. Replace real paths with neutral placeholders.
+      render: console
+      placeholder: |
+        python advisory-council/scripts/council.py check council --final --json
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: What the command or Claude printed (the `--json` output helps), or the error message and exit code.
+      render: text
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Council size, parallel or single-agent mode, other skills installed, anything unusual about the setup.
