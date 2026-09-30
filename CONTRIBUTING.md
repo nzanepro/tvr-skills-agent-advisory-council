@@ -68,7 +68,7 @@ This is a public repository. Please keep contributions free of:
 
 The hygiene test flags common personal paths. To also check for private words (your own name,
 a private project), list them one per line in a git-ignored `.private-words` file at the repo
-root, or set `REPO_CHECK_WORDS` to a comma-separated list. Never commit that file.
+root. Never commit that file.
 
 If you are not sure whether something counts as personal or confidential, ask in the pull
 request rather than posting it.

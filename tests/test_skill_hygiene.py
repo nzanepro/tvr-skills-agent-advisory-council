@@ -408,14 +408,12 @@ def _forbidden_substrings():
 def _private_words():
     # Private words (user names, private project names) are never committed: they are
     # read from a git-ignored .private-words file at the repo root (one per line, "#"
-    # comments) and from the REPO_CHECK_WORDS environment variable (comma-separated).
-    import os
+    # comments) and nowhere else.
     words = []
     path = REPO_ROOT / ".private-words"
     if path.is_file():
         words += [l.strip() for l in path.read_text(encoding="utf-8").splitlines()
                   if l.strip() and not l.strip().startswith("#")]
-    words += [w.strip() for w in os.environ.get("REPO_CHECK_WORDS", "").split(",") if w.strip()]
     return words
 
 
@@ -504,6 +502,29 @@ def test_shell_variable_pattern_catches_each_form():
         assert _SHELL_VARIABLE.search("cd " + sample + "/x"), sample
     for sample in ("costs " + dollar + "5M", "50" + percent + " of seats", "a " + dollar + " b"):
         assert not _SHELL_VARIABLE.search(sample), sample
+
+
+def _env_reads():
+    # Built by concatenation so this file never spells one itself, nor even the bare
+    # name of the Python mapping.
+    name = "env" + "iron"
+    return ["os." + name, "os." + "get" + "env", name + "[", name + ".get",
+            "get" + "env" + "(", "import " + name, "process." + "env"]
+
+
+def test_no_env_reads_in_any_repo_file():
+    # The same scanner reads a file that reads the installer's process variables and
+    # also spells a remote URL host (this file has the SVG namespace URL) as handing
+    # all of them to that host, and holds the plugin for review. Nothing outside
+    # .github/workflows reads them: private words come only from the .private-words
+    # file, and a subprocess inherits them without naming them.
+    needles = _env_reads()
+    offenders = []
+    for path, text in _iter_repo_text_files():
+        for number, line in enumerate(text.splitlines(), 1):
+            if any(needle in line for needle in needles):
+                offenders.append(f"{path.relative_to(REPO_ROOT)}:{number}: {line.strip()}")
+    assert not offenders, offenders
 
 
 # --------------------------------------------------------------------------- license / evals
