@@ -4,7 +4,7 @@ description: "Runs a simulated advisory council on a decision: seats stakeholder
 license: MIT
 compatibility: Works in any Agent Skills client. Parallel member runs need a host with subagents, such as Claude Code; otherwise it runs in single-agent mode. The helper script needs Python 3.9+ (standard library only). Web access helps verification but is optional.
 metadata:
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Advisory council

@@ -3,7 +3,40 @@
 All notable changes to this project are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/). The version matches `metadata.version` in
-`advisory-council/SKILL.md` and the marketplace entry.
+`advisory-council/SKILL.md`, `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`.
+
+## [0.2.0] - 2026-09-29
+
+### Added
+
+- `.claude-plugin/plugin.json`, the plugin's own manifest: name `council`, version,
+  description, author, license, links, keywords and the `advisory-council` skill, as the Claude
+  plugin directory expects. The install commands and `/council:advisory-council` are unchanged.
+- README: how to update the plugin (**Update now** in `/plugin`, or `claude plugin update`),
+  install commands for the shell, what the plugin writes, runs and sends, and a Support section;
+  the plugin description links to it too. GitHub Sponsor button.
+- `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md` (private reports through GitHub's
+  "Report a vulnerability"), issue forms and a pull request template.
+- Release workflow: pushing a `vX.Y.Z` tag builds `advisory-council-X.Y.Z.zip` from
+  `advisory-council/` and publishes the GitHub Release with this file's matching section.
+- CI job that runs `claude plugin validate --strict` on the marketplace and plugin manifests.
+
+### Changed
+
+- `council.py` supports Python 3.9 (was 3.10 or later); CI runs the tests on 3.9, 3.10 and
+  3.13.
+- The marketplace entry no longer sets `"strict": false` or lists the skill; `plugin.json`
+  declares it. The entry keeps the catalog fields (source, description, category, tags).
+- Tests parse the `SKILL.md` frontmatter with a strict parser, and with PyYAML when it is
+  installed (CI installs it), instead of splitting lines on the first colon.
+
+### Fixed
+
+- `council.py init` and `council.py addendum` failed on Python 3.9, where `Path.write_text()`
+  has no `newline=` argument. They now write LF files on every supported version.
+- The `SKILL.md` frontmatter was not valid YAML: the unquoted `description` contained `": "`,
+  which strict parsers such as PyYAML reject. The description is now quoted; its text is
+  unchanged.
 
 ## [0.1.0] - 2026-09-26
 
@@ -25,4 +58,5 @@ All notable changes to this project are listed here. The format follows
 - Claude Code plugin marketplace (`.claude-plugin/marketplace.json`), trigger evals, tests and
   CI on Windows, macOS and Linux.
 
+[0.2.0]: https://github.com/nzanepro/tvr-skills-agent-advisory-council/releases/tag/v0.2.0
 [0.1.0]: https://github.com/nzanepro/tvr-skills-agent-advisory-council/releases/tag/v0.1.0

@@ -1,7 +1,7 @@
 {
   "name": "council",
   "displayName": "Advisory Council",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Convene an advisory board of stakeholder personas on a product, business, technical, policy or research decision: dossier, independent Round 1, fact-check addenda, tally, Round 2 vote, recommendation with dissent, risks and next steps. Free and MIT-licensed; if it saves you time: buymeacoffee.com/trespassvr",
   "author": {
     "name": "nzanepro",
