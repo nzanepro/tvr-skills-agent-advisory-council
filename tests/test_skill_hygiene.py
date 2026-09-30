@@ -447,6 +447,32 @@ def test_no_personal_or_absolute_paths_in_shipped_content():
     assert not offenders, offenders
 
 
+# --------------------------------------------------------------------------- no shell variables
+
+# $NAME, ${...}, $(...), PowerShell $env:NAME and cmd %NAME%.
+_SHELL_VARIABLE = re.compile(r"\$(?:[A-Za-z_{(]|env:)|%[A-Za-z_][A-Za-z0-9_]*%")
+
+
+def test_no_shell_variables_or_command_substitution_in_shipped_docs():
+    # The plugin directory's scanner reads a variable such as $PWD in a README command,
+    # next to a remote URL, as a credential from the installer's machine that the
+    # command could send off it ("Uses a credential from the user's machine"), and
+    # holds the plugin for review. Install commands use literal paths instead. The
+    # workflows under .github/workflows are CI, not docs, and legitimately use ${{ }}.
+    roots = (SKILL_DIR, REPO_ROOT / "evals", REPO_ROOT / ".claude-plugin",
+             REPO_ROOT / ".github" / "ISSUE_TEMPLATE",
+             REPO_ROOT / ".github" / "pull_request_template.md") + tuple(
+                 sorted(REPO_ROOT.glob("*.md")))
+    offenders = []
+    for path, text in _iter_text_files(*roots):
+        if path.suffix not in (".md", ".json", ".yml", ".yaml", ".txt"):
+            continue
+        for number, line in enumerate(text.splitlines(), 1):
+            if _SHELL_VARIABLE.search(line):
+                offenders.append(f"{path.relative_to(REPO_ROOT)}:{number}: {line.strip()}")
+    assert not offenders, offenders
+
+
 # --------------------------------------------------------------------------- license / evals
 
 def test_advisory_council_license_matches_repo_root_license_if_present():

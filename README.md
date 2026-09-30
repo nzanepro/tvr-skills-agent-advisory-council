@@ -120,22 +120,32 @@ The new version loads in your next session, or after `/reload-plugins`. To have 
 update it for you, open the **Marketplaces** tab in `/plugin`, select
 `tvr-skills-agent-advisory-council` and choose **Enable auto-update**.
 
-**Personal skill** (every project), from a clone:
+**Personal skill** (every project), from a clone in your home folder:
 
 ```bash
+cd ~
 git clone https://github.com/nzanepro/tvr-skills-agent-advisory-council
-cp -r tvr-skills-agent-advisory-council/advisory-council ~/.claude/skills/
+mkdir -p .claude/skills
+cp -r tvr-skills-agent-advisory-council/advisory-council .claude/skills/
 ```
 
-**Linked copy**, so a `git pull` updates the skill (Claude Code follows linked skill folders):
+**Linked copy**, so a `git pull` updates the skill (Claude Code follows linked skill folders).
+Run the first three lines above, then link the folder instead of copying it:
 
 ```bash
-ln -s "$PWD/tvr-skills-agent-advisory-council/advisory-council" ~/.claude/skills/advisory-council
+ln -s ~/tvr-skills-agent-advisory-council/advisory-council ~/.claude/skills/advisory-council
 ```
+
+On Windows, in PowerShell:
 
 ```powershell
-cmd /c mklink /J "$env:USERPROFILE\.claude\skills\advisory-council" "$PWD\tvr-skills-agent-advisory-council\advisory-council"
+cd ~
+git clone https://github.com/nzanepro/tvr-skills-agent-advisory-council
+New-Item -ItemType Directory -Force .claude\skills
+cmd /c mklink /J .claude\skills\advisory-council tvr-skills-agent-advisory-council\advisory-council
 ```
+
+If you clone somewhere else, change the paths to match.
 
 **Project skill**: copy `advisory-council/` into `<project>/.claude/skills/advisory-council/` and
 commit it, so everyone on the project gets the same council process.
