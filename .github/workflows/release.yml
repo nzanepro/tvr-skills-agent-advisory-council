@@ -53,9 +53,19 @@ jobs:
               changelog, re.MULTILINE | re.DOTALL)
           if not section or not section.group(1).strip():
               sys.exit(f"CHANGELOG.md has no '## [{version}]' section")
+          # Release notes keep single line breaks, so unwrap the changelog's
+          # hard-wrapped paragraphs and list items onto one line each.
+          lines = []
+          for line in section.group(1).strip().splitlines():
+              text = line.strip()
+              if (lines and text and lines[-1].strip()
+                      and not re.match(r"(#|[-*+] |\d+\. |```)", text)):
+                  lines[-1] += " " + text
+              else:
+                  lines.append(line.rstrip())
           os.makedirs("dist", exist_ok=True)
           with open("dist/notes.md", "w", encoding="utf-8") as fh:
-              fh.write(section.group(1).strip() + "\n")
+              fh.write("\n".join(lines) + "\n")
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
               fh.write(f"version={version}\n")
           EOF
