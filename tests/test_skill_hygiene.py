@@ -378,7 +378,8 @@ def _iter_text_files(*roots):
 
 def test_no_personal_or_absolute_paths_in_shipped_content():
     forbidden = _forbidden_substrings()
-    roots = (SKILL_DIR, REPO_ROOT / "tests", REPO_ROOT / "evals", REPO_ROOT / "README.md")
+    roots = (SKILL_DIR, REPO_ROOT / "tests", REPO_ROOT / "evals", REPO_ROOT / ".claude-plugin",
+             REPO_ROOT / ".github") + tuple(sorted(REPO_ROOT.glob("*.md")))
     offenders = []
     for path, text in _iter_text_files(*roots):
         for needle in forbidden:

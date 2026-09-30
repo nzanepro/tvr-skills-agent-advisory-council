@@ -11,6 +11,7 @@ import json
 import pytest
 
 from conftest import (
+    SKILL_DIR,
     SEAT_IDS,
     SEAT_SPECS,
     TITLE,
@@ -23,6 +24,8 @@ from conftest import (
     set_fields,
     strip_todo,
 )
+
+EXAMPLE_DIR = SKILL_DIR / "references" / "example"
 
 
 # --------------------------------------------------------------------------- helpers
@@ -439,6 +442,12 @@ class TestCheck:
         assert exit_code == 0
         assert result["ok"] is True
         assert not any(p["severity"] == "error" for p in result["problems"])
+
+    def test_worked_example_passes_final_check(self, run):
+        # The example shipped in references/ must stay a valid, finished session.
+        exit_code, out = run(["check", str(EXAMPLE_DIR), "--final", "--json"])
+        assert exit_code == 0, out
+        assert json.loads(out)["ok"] is True
 
     def test_missing_persona_card_heading(self, run, tmp_path):
         folder = build_passing_session(run, tmp_path)
