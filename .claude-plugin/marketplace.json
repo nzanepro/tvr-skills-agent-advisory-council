@@ -9,32 +9,9 @@
   "plugins": [
     {
       "name": "council",
+      "source": "./",
       "description": "Convene an advisory board of stakeholder personas on a product, business, technical, policy or research decision: dossier, independent Round 1, fact-check addenda, tally, Round 2 vote, recommendation with dissent, risks and next steps. Free and MIT-licensed; if it saves you time: buymeacoffee.com/trespassvr",
-      "version": "0.1.0",
-      "license": "MIT",
       "category": "productivity",
-      "keywords": [
-        "advisory-council",
-        "advisory-board",
-        "board-of-advisors",
-        "board-of-directors",
-        "stakeholder-analysis",
-        "persona-panel",
-        "synthetic-personas",
-        "decision-making",
-        "product-strategy",
-        "product-management",
-        "business-strategy",
-        "red-team",
-        "devils-advocate",
-        "fact-checking",
-        "deliberation",
-        "multi-agent",
-        "subagents",
-        "agent-skills",
-        "claude-skills",
-        "claude-code"
-      ],
       "tags": [
         "advisory-council",
         "advisory-board",
@@ -56,13 +33,6 @@
         "agent-skills",
         "claude-skills",
         "claude-code"
-      ],
-      "homepage": "https://github.com/nzanepro/tvr-skills-agent-advisory-council",
-      "repository": "https://github.com/nzanepro/tvr-skills-agent-advisory-council",
-      "source": "./",
-      "strict": false,
-      "skills": [
-        "./advisory-council"
       ]
     }
   ]

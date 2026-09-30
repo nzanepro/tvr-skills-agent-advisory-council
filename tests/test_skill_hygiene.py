@@ -18,6 +18,8 @@ import pytest
 from conftest import REPO_ROOT, SCRIPT_PATH, SKILL_DIR
 
 SKILL_MD = SKILL_DIR / "SKILL.md"
+PLUGIN_JSON = REPO_ROOT / ".claude-plugin" / "plugin.json"
+MARKETPLACE_JSON = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 
 
 def _run_help(*args):
@@ -236,19 +238,19 @@ class TestFrontmatter:
         assert "<" not in frontmatter["description"]
         assert ">" not in frontmatter["description"]
 
+    def test_metadata_version_matches_plugin_json(self, frontmatter):
+        manifest = json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))
+        assert manifest["version"] == frontmatter["metadata"]["version"]
+
     def test_metadata_version_matches_marketplace_json(self, frontmatter):
-        marketplace = REPO_ROOT / ".claude-plugin" / "marketplace.json"
-        if not marketplace.is_file():
-            pytest.skip("no .claude-plugin/marketplace.json in this repo yet")
-        data = json.loads(marketplace.read_text(encoding="utf-8"))
-        plugins = data.get("plugins", [])
-        assert plugins, "marketplace.json has no plugins entries"
+        data = json.loads(MARKETPLACE_JSON.read_text(encoding="utf-8"))
         skill_version = frontmatter["metadata"]["version"]
-        for plugin in plugins:
-            if "advisory-council" in " ".join(plugin.get("skills", [])):
-                assert plugin["version"] == skill_version
-                return
-        pytest.fail("no plugin in marketplace.json lists ./advisory-council as a skill")
+        assert data["version"] == skill_version
+        # plugin.json carries the plugin's version; an entry version, if one is
+        # ever added back, must agree with it.
+        for plugin in data.get("plugins", []):
+            if "version" in plugin:
+                assert plugin["version"] == skill_version, plugin["name"]
 
     def test_metadata_version_matches_changelog(self, frontmatter):
         changelog = REPO_ROOT / "CHANGELOG.md"
@@ -258,6 +260,60 @@ class TestFrontmatter:
         versions = re.findall(r"^## \[(\d+\.\d+\.\d+)\]", text, re.MULTILINE)
         assert versions, "CHANGELOG.md has no '## [x.y.z]' entries"
         assert versions[0] == frontmatter["metadata"]["version"]
+
+
+# --------------------------------------------------------------------------- plugin manifests
+
+class TestPluginManifests:
+    """plugin.json is the plugin's manifest; the marketplace entry only lists it.
+
+    `claude plugin validate` does not catch the combination tested below: with a
+    plugin.json present, an entry that sets "strict": false and also declares
+    components (skills, commands, ...) makes the plugin fail to load with
+    "conflicting manifests".
+    """
+
+    COMPONENT_KEYS = ("commands", "agents", "skills", "hooks", "outputStyles", "themes")
+
+    @pytest.fixture(scope="class")
+    def manifest(self):
+        return json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))
+
+    @pytest.fixture(scope="class")
+    def entry(self):
+        data = json.loads(MARKETPLACE_JSON.read_text(encoding="utf-8"))
+        entries = [p for p in data["plugins"] if p["name"] == "council"]
+        assert len(entries) == 1, "marketplace.json must list the council plugin once"
+        return entries[0]
+
+    def test_plugin_name_is_council(self, manifest, entry):
+        # Users install council@<marketplace> and call /council:advisory-council.
+        assert manifest["name"] == entry["name"] == "council"
+
+    def test_plugin_json_declares_the_skill(self, manifest):
+        assert manifest["skills"] == ["./advisory-council"]
+        assert (REPO_ROOT / "advisory-council" / "SKILL.md").is_file()
+
+    def test_entry_source_is_the_repo_root(self, entry):
+        assert entry["source"] == "./"
+
+    def test_entry_does_not_conflict_with_plugin_json(self, entry):
+        declared = [key for key in self.COMPONENT_KEYS if key in entry]
+        assert not declared, f"declare components in plugin.json, not the entry: {declared}"
+
+    def test_required_metadata_is_set(self, manifest):
+        for key in ("version", "description", "author", "license", "homepage", "repository",
+                    "keywords"):
+            assert manifest.get(key), key
+        assert manifest["author"].get("name")
+        assert manifest["license"] == "MIT"
+
+    def test_entry_display_fields_match_plugin_json(self, manifest, entry):
+        # Entry display fields win over plugin.json in listings, so keep them equal.
+        for key in ("displayName", "description", "author", "homepage", "repository",
+                    "license", "keywords"):
+            if key in entry:
+                assert entry[key] == manifest.get(key), key
 
 
 # --------------------------------------------------------------------------- SKILL.md content
